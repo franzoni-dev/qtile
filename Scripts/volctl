@@ -9,7 +9,7 @@ show_help() {
     "
 }
 
-while [[ "$#" > 0 ]]; do case $1 in
+while [[ "$#" -gt 0 ]]; do case $1 in
     -h|--help) show_help; exit 0;shift;;
     -u|--up) PARAM='-i'; STEP='5'; TEXT="Increasing to";shift;;
     -d|--down) PARAM='-d'; STEP='5'; TEXT="Decreasing to";shift;;
@@ -20,25 +20,25 @@ esac; done
 
 MUTE=$(pamixer --get-mute)
 VOLUME=$(pamixer --get-volume)
-SOUND_PATH='/home/stavox/.config/qtile/sounds/MacOS/stereo/audio-volume-change.ogg'
+SOUND_PATH='/home/stavox/.config/qtile/sounds/BigSurSounds/sounds/system/Media_Keys.ogg'
 
 
-if [[ "$MUTE" = false && "$TOGGLE" = 1 ]]; then
-    ICON='/usr/share/icons/Papirus-Dark/48x48/status/notification-audio-volume-muted.svg'
-elif (( "$VOLUME" >= 0 && "$VOLUME" < 30 )); then
-    ICON='/usr/share/icons/Papirus-Dark/48x48/status/notification-audio-volume-low.svg'
+if [[ ("$MUTE" = false && "$TOGGLE" = 1) || "$VOLUME" = 0 ]]; then
+    ICON="notification-audio-volume-muted"
+elif (( "$VOLUME" >= 1 && "$VOLUME" < 30 )); then
+    ICON="notification-audio-volume-low"
 elif (( "$VOLUME" >= 30 && "$VOLUME" < 70 )); then
-    ICON='/usr/share/icons/Papirus-Dark/48x48/status/notification-audio-volume-medium.svg'
+    ICON="notification-audio-volume-medium"
 elif (( "$VOLUME" >= 70 )); then
-    ICON='/usr/share/icons/Papirus-Dark/48x48/status/notification-audio-volume-high.svg'
+    ICON="notification-audio-volume-high"
 fi
 
 notify() {
-    notify-send "$ICON $1" \
-        -t 500 \
-        -h string:synchronous:volume \
-        -h "int:value:$2" \
-        -u low
+    notify-send -i $ICON \
+        -r "9991" \
+        -t 2000 \
+        -h int:value:${VOLUME} "$TEXT " "${VOLUME}%" \
+        -h string:hlcolor:$HL
 }
 
 if [ "$STATUS" = 1 ]; then
@@ -46,21 +46,23 @@ if [ "$STATUS" = 1 ]; then
         VOL=$(pamixer --get-volume)
         echo "$ICON ${VOL}%"
     done
-elif [ "$MUTE" = false ] && [ "$TOGGLE" = 1 ]; then
+elif [ "$MUTE" = false ]&&[ "$TOGGLE" = 1 ]; then
     pamixer $PARAM
-    dunstify -a Control -r "9991" -i $ICON  -h string:synchronous:volume -t 2000
-    paplay -p $SOUND_PATH 
+    paplay -p $SOUND_PATH &
+    HL="#d20f39"
+    TEXT="Muted"
+    notify
 elif [ "$MUTE" = true ] || [ "$TOGGLE" = 0 ]; then
     pamixer -t
-    dunstify -a Control -r "9991" -i $ICON -h string:synchronous:volume -t 2000
-    paplay -p $SOUND_PATH 
+    paplay -p $SOUND_PATH &
+    HL="#d20f39"
+    TEXT="Un Muted"
+    notify
 else
     pamixer $PARAM $STEP
-    VOLUME=$(pamixer --get-volume)
-    let DEC="($VOLUME*255)/100"
+    paplay -p $SOUND_PATH &
+    let DEC="(($VOLUME*255)/100)"
     printf -v OP "%x" $DEC:.2f
     HL="#cba6f7$OP"
-
-    dunstify -r "9991" -i $ICON -t 2000 -h int:value:${VOLUME} "$TEXT " "${VOLUME}%" -h string:hlcolor:$HL
-    paplay -p $SOUND_PATH 
+    notify
 fi

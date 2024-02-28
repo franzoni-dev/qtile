@@ -1,6 +1,10 @@
 from libqtile.command import lazy
 from libqtile.config import EzClick, EzDrag, EzKey, Screen
-# from libqtile import qtile
+from qtile_extras import widget as widgetx
+from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupWidget
+from qtile_extras.popup.templates.mpris2 import COMPACT_LAYOUT, DEFAULT_LAYOUT
+
+from libqtile import qtile
 
 import os
 
@@ -10,6 +14,7 @@ myTerminal = "alacritty"
 myBrowser = "firefox"
 file_manager = "thunar"
 my_editor = "code"
+notes = "obsidian"
 
 EzKey.modifier_keys = {
     "M": "mod4",
@@ -45,6 +50,9 @@ def widgets_pane(qtile):
     # lazy.spawn()
     
 
+
+
+
 # Drag floating layouts.
 mouse = [
     EzDrag(
@@ -69,9 +77,9 @@ window_displacement = [
     EzKey("M-<Tab>", lazy.layout.next()),  # Shift focus -> other window(s) in stack
     EzKey("M-S-<Tab>", lazy.layout.previous()),
     EzKey("M-<Return>", lazy.layout.swap_main()),
-    EzKey("M-S-h", lazy.layout.swap_left(), lazy.layout.shuffle_left()),
-    EzKey("M-S-j", lazy.layout.swap_down(), lazy.layout.shuffle_down()),
-    EzKey("M-S-k", lazy.layout.swap_up(), lazy.layout.shuffle_up()),
+    EzKey("M-S-j", lazy.layout.swap_left(), lazy.layout.shuffle_left()),
+    EzKey("M-S-k", lazy.layout.swap_down(), lazy.layout.shuffle_down()),
+    EzKey("M-S-i", lazy.layout.swap_up(), lazy.layout.shuffle_up()),
     EzKey("M-S-l", lazy.layout.swap_right(), lazy.layout.shuffle_right()),
     EzKey("M-S-<comma>", lazy.function(window_to_next_screen)),
     EzKey("M-S-<period>", lazy.function(window_to_previous_screen)),
@@ -80,21 +88,24 @@ window_displacement = [
 ]
 
 window_size_control = [
-    EzKey("M-C-h", lazy.layout.grow_left()),
-    EzKey("M-C-j", lazy.layout.grow_down()),
-    EzKey("M-C-k", lazy.layout.grow_up()),
+    EzKey("M-C-j", lazy.layout.grow_left()),
+    EzKey("M-C-k", lazy.layout.grow_down()),
+    EzKey("M-C-i", lazy.layout.grow_up()),
     EzKey("M-C-l", lazy.layout.grow_right()),
     EzKey("M-C-m", lazy.layout.maximize()),
-    EzKey("M-C-n", lazy.layout.normalize()),  # Restore to original size
+    EzKey("M-C-n", lazy.layout.normalize()), 
+    EzKey("M-A-<comma>", lazy.layout.shrink()), 
+    EzKey("M-A-<period>", lazy.layout.grow()),  # Restore to original size
 ]
 
 toggles = [
     EzKey("M-w", lazy.window.kill()),
     EzKey("M-<space>", lazy.next_layout()),
-    EzKey("M-t", lazy.window.toggle_floating()),
+    EzKey("M-f", lazy.window.toggle_floating()),
     EzKey("M-m", lazy.window.toggle_minimize()),
     EzKey("M-C-<space>", lazy.group.setlayout("max")),
     EzKey("M-S-<space>", lazy.window.toggle_fullscreen()),
+    # EzKey("M-A-C-h", lazy.function()),
 ]
 
 qtile_controls = [
@@ -123,7 +134,8 @@ application_spawns = [
     EzKey("M-t", lazy.spawn(myTerminal)),
     EzKey("M-b", lazy.spawn(myBrowser)),
     EzKey("M-e", lazy.spawn(file_manager)),
-    EzKey("M-c", lazy.spawn(my_editor))
+    EzKey("M-c", lazy.spawn(my_editor)),
+    EzKey("M-o", lazy.spawn(notes)),
 ]
 
 audio_controls = [
@@ -131,6 +143,7 @@ audio_controls = [
     EzKey("<XF86AudioRaiseVolume>", lazy.spawn(os.path.expanduser("~/.config/qtile/Scripts/volctl  --up"))),
     EzKey("<XF86AudioLowerVolume>", lazy.spawn(os.path.expanduser("~/.config/qtile/Scripts/volctl  --down"))),
     EzKey("<XF86AudioMicMute>", lazy.spawn("micvol --mute")),
+    EzKey("M-A-p", lazy.widget["mpris2"].toggle_player()),
 ]
 
 media_controls = [
