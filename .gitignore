@@ -1,2 +1,7 @@
 __pycache__/
 sounds/
+modules/__pycache__/
+icons/
+
+#files
+__pycache__.zip
